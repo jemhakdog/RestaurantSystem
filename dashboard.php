@@ -26,81 +26,155 @@ $user = $result->fetch_assoc();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Golden Spoon - Dashboard</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e8e8e8; /* Light gray background */
-            color: #444; /* Darker text for better readability */
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+        <style>
+        :root {
+            --primary: #ff9f1c;
+            --secondary: #2ec4b6;
+            --dark: #011627;
+            --light: #fdfffc;
+            --accent: #e71d36;
         }
 
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+             
         .navbar {
-            background-color: #333; /* Dark background */
-            padding: 15px 20px;
+            background-color: var(--dark);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar h1 {
-            color: #f1c40f; /* Golden yellow text */
-            font-size: 2em;
-            font-family: 'Georgia', serif;
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
             margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .navbar a {
-            color: #fff;
+            color: var(--light);
             text-decoration: none;
-            padding: 12px 20px;
-            font-size: 1.1em;
-            transition: background-color 0.3s, transform 0.3s ease-in-out;
+            padding: 0.8rem 1.2rem;
+            margin: 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
         }
 
         .navbar a:hover {
-            background-color: #f39c12;
-            border-radius: 5px;
-            transform: scale(1.05); /* Slight scale effect on hover */
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .navbar a:hover::before {
+            width: 100%;
         }
 
         .navbar a.active {
-            background-color: #f39c12;
+            background-color: rgba(255, 159, 28, 0.1);
+            color: var(--primary);
+        }
+        .welcome {
+            font-size: 1.8rem;
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 2.5rem;
+            font-weight: 700;
+            position: relative;
+            display: block;
+            width: 100%;
+            padding: 0 1rem;
         }
 
         .container {
             max-width: 1200px;
-            margin: 50px auto;
-            padding: 50px;
-            background-color: #fff; /* White background for content area */
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(1, 1, 1, 1.1);
+            margin: 3rem auto;
+            padding: 2.5rem;
+            background-color: var(--light);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
 
         .welcome {
-            font-size: 1.5em;
+            font-size: 1.8rem;
             text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 2.5rem;
+            font-weight: 700;
+            position: relative;
+            display: inline-block;
+            padding: 0 1rem;
+        }
+
+        .welcome::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
         }
 
         .carousel {
             display: flex;
             justify-content: center;
             overflow: hidden;
-            width: 80%;
-            height: 400px;
+            width: 90%;
+            height: 500px;
             margin: 0 auto;
-            border-radius: 10px;
+            border-radius: 16px;
             position: relative;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
         .carousel-images {
             display: flex;
-            transition: transform 0.5s ease-in-out;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         .carousel-images img {
@@ -108,94 +182,124 @@ $user = $result->fetch_assoc();
             height: 100%;
             object-fit: cover;
             flex-shrink: 0;
-            border-radius: 10px;
+            border-radius: 16px;
         }
 
         .carousel-controls {
             position: absolute;
             top: 50%;
-            left: 30px;
             transform: translateY(-50%);
-            font-size: 1em;
-            color: white;
-            cursor: pointer;
-            background-color: rgba(1, 0, 2, 0.5);
-            padding: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: var(--dark);
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .carousel-controls:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-controls.left {
+            left: 20px;
         }
 
         .carousel-controls.right {
-            left: auto;
-            right: 10px;
+            right: 20px;
         }
 
-        .logout {
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .logout a {
-            font-size: 1.2em;
-            color: #f39c12;
-            text-decoration: none;
-        }
-
-        .logout a:hover {
-            text-decoration: underline;
-        }
-
-        /* Footer Styles */
         footer {
-            background-color: #333; /* Dark footer background */
-            color: #fff;
-            padding: 30px 0;
+            background-color: var(--dark);
+            color: var(--light);
+            padding: 3rem 0;
             text-align: center;
+            margin-top: 4rem;
         }
 
-        footer .footer-links {
-            margin-bottom: 20px;
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
         }
 
-        footer .footer-links a {
-            color: #fff;
+        .footer-links a {
+            color: var(--light);
             text-decoration: none;
-            margin: 0 15px;
-            font-size: 1.1em;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+            position: relative;
         }
 
-        footer .footer-links a:hover {
-            color: #f39c12;
+        .footer-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
         }
 
-        footer .footer-text {
-            font-size: 0.9em;
-            color: #bbb;
+        .footer-links a:hover {
+            color: var(--primary);
         }
 
-        footer .footer-text a {
-            color: #f39c12;
+        .footer-links a:hover::after {
+            width: 100%;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 1rem;
+        }
+
+        .footer-text a {
+            color: var(--primary);
             text-decoration: none;
+            transition: color 0.3s ease;
         }
 
-        footer .footer-text a:hover {
+        .footer-text a:hover {
+            color: var(--secondary);
             text-decoration: underline;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
-                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            .navbar h1 {
+                margin-bottom: 1rem;
             }
 
             .carousel {
-                margin-bottom: 15px;
                 width: 100%;
-                height: 250px;
+                height: 300px;
             }
 
-            footer {
-                padding: 20px 0;
+            .container {
+                padding: 1.5rem;
+                margin: 1.5rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
             }
         }
     </style>

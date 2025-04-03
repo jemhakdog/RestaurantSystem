@@ -23,9 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $image = basename($_FILES["image"]["name"]);
         }
     }
-    $sql_update = "UPDATE menu SET `name` = '$name', `description` = '$description', `price` = '$price', 
-                  `quantity` = '$quantity', `image` = '$image', `category` = '$category' 
-                  WHERE `menu_id` = '$id'";
+$stmt = $conn->prepare("UPDATE menu SET `name` = ?, `description` = ?, `price` = ?, 
+                       `quantity` = ?, `image` = ?, `category` = ? 
+                       WHERE `menu_id` = ?");
+$stmt->bind_param("ssdissi", $name, $description, $price, $quantity, $image, $category, $id);
    
     if (mysqli_query($conn, $sql_update)) {
         header('Location: menu.php?success=1'); 

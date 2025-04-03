@@ -32,6 +32,14 @@ $total_price = 0;
 foreach ($_SESSION['cart'] as $item) {
     $total_price += $item['price'] * $item['quantity'];
 }
+require __DIR__ . '/vendor/autoload.php'; // Include Composer's autoload
+
+// Load environment variables from .env file
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Access environment variables
+$paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
 ?>
 
 <!DOCTYPE html>
@@ -40,50 +48,86 @@ foreach ($_SESSION['cart'] as $item) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - The Golden Spoon</title>
-    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://www.paypal.com/sdk/js?client-id=<?php echo htmlspecialchars($paypal_client_id); ?>&currency=PHP"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #444;
+     :root {
+            --primary: #ff9f1c;
+            --secondary: #2ec4b6;
+            --dark: #011627;
+            --light: #fdfffc;
+            --accent: #e71d36;
         }
 
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+             
         .navbar {
-            background-color: #333;
-            padding: 15px 20px;
+            background-color: var(--dark);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar h1 {
-            color: #f1c40f;
-            font-size: 2em;
-            font-family: 'Georgia', serif;
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
             margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .navbar a {
-            color: #fff;
+            color: var(--light);
             text-decoration: none;
-            padding: 12px 20px;
-            font-size: 1.1em;
-            transition: background-color 0.3s, transform 0.3s ease-in-out;
+            padding: 0.8rem 1.2rem;
+            margin: 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
         }
 
         .navbar a:hover {
-            background-color: #f39c12;
-            border-radius: 5px;
-            transform: scale(1.05);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .navbar a:hover::before {
+            width: 100%;
         }
 
         .navbar a.active {
-            background-color: #f39c12;
+            background-color: rgba(255, 159, 28, 0.1);
+            color: var(--primary);
         }
-
         .container {
             max-width: 1200px;
             margin: 50px auto;
@@ -256,14 +300,14 @@ foreach ($_SESSION['cart'] as $item) {
                     <div class="cart-item-details">
                         <h3><?php echo htmlspecialchars($item['name']); ?></h3>
                         <p>Quantity: <?php echo htmlspecialchars($item['quantity']); ?></p>
-                        <p class="price">$<?php echo number_format($item['price'], 2); ?></p>
-                        <p class="subtotal">Subtotal: $<?php echo number_format($item['price'] * $item['quantity'], 2); ?></p>
+                        <p class="price">PHP:<?php echo number_format($item['price'], 2); ?></p>
+                        <p class="subtotal">Subtotal: PHP:<?php echo number_format($item['price'] * $item['quantity'], 2); ?></p>
                     </div>
                 </div>
             <?php endforeach; ?>
 
             <div class="total-price">
-                Total: $<?php echo number_format($total_price, 2); ?>
+                Total: PHP:<?php echo number_format($total_price, 2); ?>
             </div>
             <form action="order-confirmation.php" method="POST" id="checkout-form">
                 <!-- Fix the cart data structure -->
@@ -325,13 +369,10 @@ foreach ($_SESSION['cart'] as $item) {
                         <label for="paypal">Pay with PayPal</label>
                     </div>
                     <div>
-                        <input type="radio" id="gcash" name="payment_method" value="gcash">
-                        <label for="gcash">Pay with GCash</label>
+                        <input type="radio" id="cod" name="payment_method" value="cod" required checked>
+                        <label for="cod">Cash on Delivery</label>
                     </div>
-                    <div>
-                        <input type="radio" id="bank_transfer" name="payment_method" value="bank_transfer">
-                        <label for="bank_transfer">Bank Transfer</label>
-                    </div>
+                    
 
                     <div class="paypal-button-container" id="paypal-button-container"></div>
 
@@ -378,21 +419,60 @@ foreach ($_SESSION['cart'] as $item) {
         toggleAddressForm(); // Call immediately to set initial state
 
 
-        // Initialize PayPal button on selection
+        // Payment method toggle functionality
+        document.querySelectorAll('input[name="payment_method"]').forEach(function(input) {
+            input.addEventListener('change', function() {
+                const paypalContainer = document.getElementById('paypal-button-container');
+                if (this.value === 'paypal') {
+                    paypalContainer.style.display = 'block';
+                } else {
+                    paypalContainer.style.display = 'none';
+                }
+            });
+        });
+
+        // Initialize with PayPal hidden (since COD is default)
+        document.getElementById('paypal-button-container').style.display = 'none';
+
         paypal.Buttons({
             createOrder: function(data, actions) {
                 return actions.order.create({
                     purchase_units: [{
                         amount: {
-                            value: '<?php echo number_format($total_price, 2); ?>'
-                        }
+                            currency_code: 'PHP', // Philippine Peso
+                            value: <?php echo $total_price?>      // Total amount
+                        },
+                        description: 'Payment for your order'
                     }]
                 });
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    alert('Payment successful! Order confirmed.');
-                    document.getElementById('checkout-form').submit();  // Submit the checkout form
+                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    Swal.fire({
+                        title: 'Transaction Details',
+                        text: JSON.stringify(details, null, 2),
+                        icon: 'info'
+                    });
+                    // // Redirect or handle success here
+                    // window.location.href = '/success.html';
+                });
+            },
+            onCancel: function(data) {
+                Swal.fire({
+                    title: 'Payment Cancelled',
+                    text: 'You have cancelled the payment process.',
+                    icon: 'warning'
+                });
+                // // Redirect or handle cancellation here
+                // window.location.href = '/cancel.html';
+            },
+            onError: function(err) {
+                console.error('Error during payment:', err);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred during payment.',
+                    icon: 'error'
                 });
             }
         }).render('#paypal-button-container');

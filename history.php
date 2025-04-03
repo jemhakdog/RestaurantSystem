@@ -65,38 +65,81 @@ $result = $conn->query($sql);
             text-align: right;
         }
 
+        :root {
+            --primary: #ff9f1c;
+            --secondary: #2ec4b6;
+            --dark: #011627;
+            --light: #fdfffc;
+            --accent: #e71d36;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+             
         .navbar {
-            background-color: #333; /* Dark background */
-            padding: 15px 20px;
+            background-color: var(--dark);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar h1 {
-            color: #f1c40f; /* Golden yellow text */
-            font-size: 2em;
-            font-family: 'Georgia', serif;
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
             margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .navbar a {
-            color: #fff;
+            color: var(--light);
             text-decoration: none;
-            padding: 12px 20px;
-            font-size: 1.1em;
-            transition: background-color 0.3s, transform 0.3s ease-in-out;
+            padding: 0.8rem 1.2rem;
+            margin: 0 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
         }
 
         .navbar a:hover {
-            background-color: #f39c12;
-            border-radius: 5px;
-            transform: scale(1.05); /* Slight scale effect on hover */
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .navbar a:hover::before {
+            width: 100%;
         }
 
         .navbar a.active {
-            background-color: #f39c12;
+            background-color: rgba(255, 159, 28, 0.1);
+            color: var(--primary);
         }
 
         body {

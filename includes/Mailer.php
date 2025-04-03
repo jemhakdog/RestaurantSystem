@@ -1,13 +1,22 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php'; // Include Composer's autoload
+
+// Load environment variables from .env file
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Access environment variables
+$email = $_ENV['EMAIL'];
+$password = $_ENV['PASSWORD'];
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 class Mailer {
     private $mail;
-    private $email =  'joblits.co@gmail.com'; 
-    private $password = 'xvuh racq cbue fskh';
+
+  
 
     public function __construct() {
         $this->mail = new PHPMailer(true);
@@ -78,6 +87,37 @@ class Mailer {
             return true;
         } catch (Exception $e) {
             error_log("Email sending failed: {$this->mail->ErrorInfo}");
+            return false;
+        }
+    }
+
+    public function sendStatusUpdate($name, $email, $orderId, $status, $items, $total) {
+        try {
+            $this->mail->clearAddresses(); // Clear previous recipients
+            $this->mail->addAddress($email, $name);
+            $this->mail->isHTML(true);
+            $this->mail->Subject = 'Order Status Update - The Golden Spoon';
+            
+            $body = "<h2>Order Status Update</h2>";
+            $body .= "<p>Dear {$name},</p>";
+            $body .= "<p>Your order status has been updated:</p>";
+            $body .= "<p><strong>Order ID:</strong> #{$orderId}</p>";
+            $body .= "<p><strong>New Status:</strong> " . ucfirst($status) . "</p>";
+            
+            $body .= "<h3>Order Items:</h3>";
+            $body .= "<ul>";
+            foreach ($items as $item) {
+                $body .= "<li>{$item['name']} x {$item['quantity']} - ₱{$item['price']}</li>";
+            }
+            $body .= "</ul>";
+            $body .= "<p><strong>Total Amount:</strong> ₱{$total}</p>";
+            $body .= "<p>Thank you for choosing The Golden Spoon!</p>";
+            
+            $this->mail->Body = $body;
+            $this->mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Status update email failed: {$this->mail->ErrorInfo}");
             return false;
         }
     }

@@ -1,6 +1,7 @@
 <?php
 session_start();
 include('../db.php');
+include('../includes/Mailer.php');  // Add this line to include Mailer
 
 
 // Check if user is logged in and is admin
@@ -57,7 +58,8 @@ if ($stmt->execute()) {
     }
 
     // Fetch updated order details
-    $order_sql = "SELECT o.*, u.first_name, u.last_name, u.phone, 
+    // In the $order_sql query, add u.email to the selected fields:
+    $order_sql = "SELECT o.*, u.first_name, u.last_name, u.phone, u.email, 
                  CASE 
                      WHEN o.service_type = 'delivery' THEN a.address 
                      ELSE NULL 
@@ -107,6 +109,20 @@ if ($stmt->execute()) {
     ];
 
     echo json_encode($response);
+    
+    // Send status update email
+    $mailer = new Mailer();
+    $customer_email = $order_details['email'] ?? ''; // Make sure email is fetched in your SQL query
+    if ($customer_email) {
+        $mailer->sendStatusUpdate(
+            $order_details['first_name'] . ' ' . $order_details['last_name'],
+            $customer_email,
+            $order_id,
+            $status,
+            $order_items,
+            $order_details['total_amount']
+        );
+    }
 } else {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
 }
