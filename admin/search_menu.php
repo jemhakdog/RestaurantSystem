@@ -5,6 +5,10 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     $term = mysqli_real_escape_string($conn, $_POST['search']);
     $sql = "SELECT * FROM menu WHERE name LIKE '%$term%'";
     $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        error_log('MySQL Error: '.mysqli_error($conn));
+        echo "<script>alert('Error: An error occurred while searching the menu.');</script>";
+    }
     if (mysqli_num_rows($result) > 0){
         while($row = mysqli_fetch_assoc($result)){
             echo "<tr>";

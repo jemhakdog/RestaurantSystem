@@ -37,102 +37,159 @@ function getStatusClass($status) {
 
     <style>
         :root {
-            --primary: #f1c40f;
-            --secondary: #333;
-            --light: #f8f9fa;
-            --dark: #343a40;
-            --success: #28a745;
-            --info: #17a2b8;
-            --warning: #ffc107;
-            --danger: #dc3545;
+            --primary: #FFD700;
+            --secondary: #2C3E50;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --info: #17A2B8;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --sidebar-width: 280px;
+            --transition-speed: 0.3s;
         }
         
         body {
-            background-color: #f5f5f5;
+            background-color: #F8F9FA;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
         
         .sidebar {
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #1A252F 100%);
             color: white;
             height: 100vh;
             position: fixed;
+            width: var(--sidebar-width);
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transition: all var(--transition-speed) ease;
         }
         
         .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 5px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 8px;
+            border-radius: 8px;
+            padding: 12px 20px;
+            transition: all var(--transition-speed) ease;
         }
         
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
             color: white;
-            background-color: var(--primary);
+            background: rgba(255, 215, 0, 0.15);
+            transform: translateX(5px);
         }
         
         .sidebar .nav-link i {
-            margin-right: 10px;
+            margin-right: 12px;
+            font-size: 1.1rem;
         }
         
         .main-content {
-            margin-left: 250px;
-            padding: 20px;
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            transition: all var(--transition-speed) ease;
         }
         
         .card {
             border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all var(--transition-speed) ease;
+            overflow: hidden;
         }
         
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-text {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
         }
         
         .status-badge {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
-        }
-        
-        .badge-new {
-            background-color: var(--info);
-            color: white;
-        }
-        
-        .badge-preparing {
-            background-color: var(--warning);
-            color: black;
-        }
-        
-        .badge-ready {
-            background-color: var(--success);
-            color: white;
-        }
-        
-        .badge-delivered {
-            background-color: var(--primary);
-            color: black;
-        }
-        
-        .badge-cancelled {
-            background-color: var(--danger);
-            color: white;
+            letter-spacing: 0.5px;
         }
         
         .search-box {
             position: relative;
+            margin-bottom: 1rem;
         }
         
         .search-box input {
-            padding-left: 40px;
+            padding-left: 45px;
+            border-radius: 8px;
+            border: 1px solid #E9ECEF;
+            height: 45px;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25);
         }
         
         .search-box i {
             position: absolute;
             left: 15px;
-            top: 12px;
-            color: #6c757d;
+            top: 14px;
+            color: #6C757D;
+            font-size: 1rem;
+        }
+        
+        .table {
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .table tbody tr {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all var(--transition-speed) ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #2C3E50;
+        }
+        
+        .btn-primary:hover {
+            background-color: #FFC800;
+            border-color: #FFC800;
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -165,11 +222,7 @@ function getStatusClass($status) {
                             </a>
                         </li>
                        
-                        <li class="nav-item">
-                            <a class="nav-link" href="/admin/reports.php">
-                                <i class="fas fa-chart-line"></i> Reports
-                            </a>
-                        </li>
+                      
                         <li class="nav-item">
                             <a class="nav-link" href="/admin/settings.php">
                                 <i class="fas fa-cog"></i> Settings

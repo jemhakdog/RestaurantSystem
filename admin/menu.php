@@ -388,38 +388,52 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 
 // Add event listeners for edit and delete buttons
 document.addEventListener('DOMContentLoaded', function() {
-    fetch('search_menu.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'search='
-    })
-    .then(response => response.text())
-    .then(data => {
-        document.getElementById('menu-table-body').innerHTML = data;
-   
-    // Handle delete button clicks
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            if (confirm('Are you sure you want to delete this menu item?')) {
-                // Create form element
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'delete_menu.php';
+    // Prevent duplicate event listeners by using event delegation where possible
+    const menuTable = document.getElementById('menu-table');
+    if (menuTable) {
+        menuTable.addEventListener('click', function(event) {
+            const target = event.target;
+            if (target.classList.contains('edit-btn')) {
+                // Handle edit button click
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const description = this.getAttribute('data-description');
+                const price = this.getAttribute('data-price');
+                const quantity = this.getAttribute('data-quantity');
+                const img = this.getAttribute('data-image');
+                const category = this.getAttribute('data-category');
+                
 
-                // Create hidden input for ID
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'id';
-                input.value = id;
+                document.getElementById('edit_item_id').value = id;
+                document.getElementById('edit_item_name').value = name;
+                document.getElementById('edit_item_description').value = description;
+                document.getElementById('edit_item_price').value = price;
+                document.getElementById('edit_item_quantity').value = quantity;
+                document.getElementById('edit_item_category').value = category;
+                
+                document.getElementById('edit_img').src = '../images/' + img;
+                document.getElementById('edit_old_image').value = img;
 
-                // Append input to form and submit
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-            }
+                // Make image clickable to trigger file input
+                document.getElementById('edit_img').addEventListener('click', function() {
+                    document.getElementById('edit_item_image').click();
+                });
+
+                // Preview uploaded image immediately
+                document.getElementById('edit_item_image').addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('edit_img').src = e.target.result;
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+                // Show modal
+                var editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+                editModal.show();
+            });
+        }
         });
     });
     document.querySelectorAll('.edit-btn').forEach(button => {
