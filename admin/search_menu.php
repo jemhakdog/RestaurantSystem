@@ -11,6 +11,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
             echo "<td>".$row['menu_id']."</td>";
             echo "<td><img src='../images/". $row['image']. "' alt='". $row['name']. "' width='50'></td>";
             echo "<td>".$row['name']."</td>";
+            echo "<td>".$row['quantity']."</td>";
             echo "<td>".$row['category']."</td>";
             echo "<td>".$row['price']."</td>";
             echo "<td>

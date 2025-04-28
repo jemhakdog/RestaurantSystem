@@ -37,159 +37,102 @@ function getStatusClass($status) {
 
     <style>
         :root {
-            --primary: #FFD700;
-            --secondary: #2C3E50;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --info: #17A2B8;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --sidebar-width: 280px;
-            --transition-speed: 0.3s;
+            --primary: #f1c40f;
+            --secondary: #333;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
         }
         
         body {
-            background-color: #F8F9FA;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background-color: #f5f5f5;
         }
         
         .sidebar {
-            background: linear-gradient(135deg, var(--secondary) 0%, #1A252F 100%);
+            background-color: var(--secondary);
             color: white;
             height: 100vh;
             position: fixed;
-            width: var(--sidebar-width);
-            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-            transition: all var(--transition-speed) ease;
         }
         
         .sidebar .nav-link {
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 8px;
-            border-radius: 8px;
-            padding: 12px 20px;
-            transition: all var(--transition-speed) ease;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
         }
         
         .sidebar .nav-link:hover, .sidebar .nav-link.active {
             color: white;
-            background: rgba(255, 215, 0, 0.15);
-            transform: translateX(5px);
+            background-color: var(--primary);
         }
         
         .sidebar .nav-link i {
-            margin-right: 12px;
-            font-size: 1.1rem;
+            margin-right: 10px;
         }
         
         .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 30px;
-            transition: all var(--transition-speed) ease;
+            margin-left: 250px;
+            padding: 20px;
         }
         
         .card {
             border: none;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            transition: all var(--transition-speed) ease;
-            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
         }
         
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
-        }
-        
-        .card-body {
-            padding: 1.5rem;
-        }
-        
-        .card-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .card-text {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
+            transform: translateY(-5px);
         }
         
         .status-badge {
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
+        }
+        
+        .badge-new {
+            background-color: var(--info);
+            color: white;
+        }
+        
+        .badge-preparing {
+            background-color: var(--warning);
+            color: black;
+        }
+        
+        .badge-ready {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-delivered {
+            background-color: var(--primary);
+            color: black;
+        }
+        
+        .badge-cancelled {
+            background-color: var(--danger);
+            color: white;
         }
         
         .search-box {
             position: relative;
-            margin-bottom: 1rem;
         }
         
         .search-box input {
-            padding-left: 45px;
-            border-radius: 8px;
-            border: 1px solid #E9ECEF;
-            height: 45px;
-            transition: all var(--transition-speed) ease;
-        }
-        
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.25);
+            padding-left: 40px;
         }
         
         .search-box i {
             position: absolute;
             left: 15px;
-            top: 14px;
-            color: #6C757D;
-            font-size: 1rem;
-        }
-        
-        .table {
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
-        
-        .table thead th {
-            border: none;
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        .table tbody tr {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            transition: all var(--transition-speed) ease;
-        }
-        
-        .table tbody tr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn {
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 500;
-            transition: all var(--transition-speed) ease;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
-            color: #2C3E50;
-        }
-        
-        .btn-primary:hover {
-            background-color: #FFC800;
-            border-color: #FFC800;
-            transform: translateY(-2px);
+            top: 12px;
+            color: #6c757d;
         }
     </style>
 </head>
@@ -223,6 +166,11 @@ function getStatusClass($status) {
                         </li>
                        
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/reports.php">
+                                <i class="fas fa-chart-line"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/admin/settings.php">
                                 <i class="fas fa-cog"></i> Settings
                             </a>
@@ -237,7 +185,7 @@ function getStatusClass($status) {
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9  main-content">
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Order Management</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
@@ -431,96 +379,6 @@ function getStatusClass($status) {
     // Initial load of the table
     updateTable();
 });
-
-
-function viewOrder(orderId) {
-        const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-        const modalContent = document.getElementById('orderDetailsContent');
-        modalContent.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        `;
-        modal.show();
-
-        fetch(`get_order_details.php?order_id=${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    modalContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-                    return;
-                }
-                
-                modalContent.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="mb-4">
-                                        <h6 class="fw-bold">#ORD-${String(data.order_id).padStart(4, '0')}</h6>
-                                        <p class="text-muted mb-1"><i class="fas fa-user me-2"></i>Customer: ${data.first_name} ${data.last_name}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-phone me-2"></i>Phone: ${data.phone}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-truck me-2"></i>Service Type: ${data.service_type ? data.service_type.charAt(0).toUpperCase() + data.service_type.slice(1) : 'N/A'}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-credit-card me-2"></i>Payment Method: ${data.payment_method ? data.payment_method.replace('_', ' ').toUpperCase() : 'N/A'}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-money-bill-wave me-2"></i>Payment Status: ${data.payment_status ? data.payment_status.charAt(0).toUpperCase() + data.payment_status.slice(1) : 'N/A'}</p>
-                                        <p class="text-muted"><i class="fas fa-map-marker-alt me-2"></i>Delivery Address: ${data.delivery_address || 'N/A'}</p>
-                                    </div>
-                                    <hr>
-                                    <h6 class="fw-bold mb-3">Order Items</h6>
-                                    <ul class="list-group list-group-flush mb-3">
-                                        ${data.items.map(item => `
-                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                                <div>
-                                                    <span class="fw-medium">${item.name}</span>
-                                                    <br>
-                                                    <small class="text-muted">Quantity: ${item.quantity}</small>
-                                                </div>
-                                                <span>$${(item.price * item.quantity).toFixed(2)}</span>
-                                            </li>
-                                        `).join('')}
-                                    </ul>
-                                    <div class="d-flex justify-content-between align-items-center py-3 border-top">
-                                        <h6 class="fw-bold mb-0">Total:</h6>
-                                        <h6 class="fw-bold mb-0">$${data.total_amount}</h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-grid gap-2 mt-3">
-                                ${data.order_status === 'pending' ? 
-                                    `<button class="btn btn-warning" onclick="updateOrderStatus(${data.order_id}, 'preparing')"><i class="fas fa-utensils me-2"></i>Assign to Kitchen</button>` : ''}
-                                ${data.order_status === 'preparing' ? 
-                                    `<button class="btn btn-success" onclick="updateOrderStatus(${data.order_id}, 'ready')"><i class="fas fa-check me-2"></i>Mark as Ready</button>` : ''}
-                                ${data.order_status === 'pending' ? 
-                                    `<button class="btn btn-danger" onclick="updateOrderStatus(${data.order_id}, 'cancelled')"><i class="fas fa-times me-2"></i>Cancel Order</button>` : ''}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-4">Order Status</h6>
-                                    <div class="timeline">
-                                        <div class="timeline-item">
-                                            <h6 class="fw-bold">Current Status</h6>
-                                            <p class="text-muted small mb-1">${new Date(data.created_at).toLocaleString()}</p>
-                                            <p class="mb-0">${data.order_status.charAt(0).toUpperCase() + data.order_status.slice(1)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            })
-            .catch(error => {
-                modalContent.innerHTML = `<div class="alert alert-danger">Error loading order details. Please try again.</div>`;
-            });
-    }
-
-    
                 </script>
-
-                
 </html>
 

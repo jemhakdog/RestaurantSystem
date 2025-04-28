@@ -31,8 +31,9 @@ try {
             $unit_price = $item['price'];
             $subtotal = $quantity * $unit_price;
             
-            $stmt = $conn->prepare("INSERT INTO order_items (order_id, menu_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("iiiss", $order_id, $menu_id, $quantity, $unit_price, $subtotal);
+            $notes = isset($item['notes']) ? $item['notes'] : '';
+            $stmt = $conn->prepare("INSERT INTO order_items (order_id, menu_id, quantity, unit_price, subtotal, notes) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("iiisss", $order_id, $menu_id, $quantity, $unit_price, $subtotal, $notes);
             $stmt->execute();
         }
     }

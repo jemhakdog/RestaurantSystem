@@ -280,12 +280,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                         <input class="form-check-input" type="checkbox" id="cashPayment" checked>
                                         <label class="form-check-label" for="cashPayment">Cash Payment</label>
                                     </div>
+                                
                                     <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" id="cardPayment" checked>
-                                        <label class="form-check-label" for="cardPayment">Credit/Debit Card</label>
-                                    </div>
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" id="paypalPayment">
+                                        <input class="form-check-input" type="checkbox" id="paypalPayment" checked>
                                         <label class="form-check-label" for="paypalPayment">PayPal</label>
                                     </div>
                                     <div class="mb-3">

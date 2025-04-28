@@ -28,7 +28,7 @@ $stmt = $conn->prepare("UPDATE menu SET `name` = ?, `description` = ?, `price` =
                        WHERE `menu_id` = ?");
 $stmt->bind_param("ssdissi", $name, $description, $price, $quantity, $image, $category, $id);
    
-    if (mysqli_query($conn, $sql_update)) {
+    if ($stmt->execute()) {
         header('Location: menu.php?success=1'); 
         exit();
     } else {

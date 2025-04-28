@@ -1,9 +1,8 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/vendor/autoload.php'; // Include Composer's autoload
 
 // Load environment variables from .env file
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->load();
 
 // Access environment variables
@@ -15,10 +14,13 @@ use PHPMailer\PHPMailer\Exception;
 
 class Mailer {
     private $mail;
-
-  
+    private $email;
+    private $password;
 
     public function __construct() {
+        global $email, $password;
+        $this->email = $email;
+        $this->password = $password;
         $this->mail = new PHPMailer(true);
         $this->mail->isSMTP();
         $this->mail->Host = 'smtp.gmail.com'; // Replace with your SMTP host
