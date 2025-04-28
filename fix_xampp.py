@@ -10,16 +10,22 @@ mysql_data_old_path = os.path.join(xampp_path, "mysql", "data_old")
 
 # Step 1: Rename mysql/data to mysql/data_old
 if os.path.exists(mysql_data_path):
-    print("Renaming mysql/data to mysql/data_old...")
-    os.rename(mysql_data_path, mysql_data_old_path)
+    if os.path.exists(mysql_data_old_path):
+        print("mysql/data_old already exists. Skipping rename.")
+    else:
+        print("Renaming mysql/data to mysql/data_old...")
+        os.rename(mysql_data_path, mysql_data_old_path)
 else:
     print("Error: mysql/data does not exist. Exiting.")
     exit(1)
 
 # Step 2: Copy mysql/backup folder and rename it as mysql/data
 if os.path.exists(mysql_backup_path):
-    print("Copying mysql/backup to mysql/data...")
-    shutil.copytree(mysql_backup_path, mysql_data_path)
+    if os.path.exists(mysql_data_path):
+        print("mysql/data already exists. Skipping copy from backup.")
+    else:
+        print("Copying mysql/backup to mysql/data...")
+        shutil.copytree(mysql_backup_path, mysql_data_path)
 else:
     print("Error: mysql/backup does not exist. Exiting.")
     exit(1)
