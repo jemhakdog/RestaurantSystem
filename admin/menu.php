@@ -264,6 +264,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                                         <th>ID</th>
                                         <th>Image</th>
                                         <th>Name</th>
+                                        <th>Quantity</th>
                                         <th>Category</th>
                                         <th>Price</th>
                                         <th>Actions</th>

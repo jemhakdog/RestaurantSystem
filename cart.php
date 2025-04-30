@@ -1,11 +1,6 @@
 <?php
 session_start();
 
-// Ensure the cart is initialized if it doesn't exist
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = array();
-}
-
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: index.php');
@@ -16,34 +11,107 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $role = $_SESSION['role'];
 
-// Fetch user information from the database (optional for this demo)
 include('db.php');
 
-// Handle updating cart item quantity
 if (isset($_POST['update_quantity'])) {
     $menu_id = $_POST['menu_id'];
     $quantity = $_POST['quantity'];
 
-    // Update quantity if it's a valid number
     if ($quantity > 0) {
-        $_SESSION['cart'][$menu_id]['quantity'] = $quantity;
+        $update_sql = "UPDATE cart_items SET quantity = ? WHERE user_id = ? AND menu_id = ?";
+        $update_stmt = $conn->prepare($update_sql);
+        $update_stmt->bind_param('iii', $quantity, $user_id, $menu_id);
+        if ($update_stmt->execute()) {
+            echo "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Cart quantity updated successfully!'
+                });
+            </script>";
+        } else {
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to update cart quantity.'
+                });
+            </script>";
+        }
     } else {
-        // If quantity is 0 or less, remove the item from the cart
-        unset($_SESSION['cart'][$menu_id]);
+        // ... existing delete code for quantity 0 ...
+        if ($delete_stmt->execute()) {
+            echo "<script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Item removed from cart!'
+                });
+            </script>";
+        } else {
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to remove item from cart.'
+                });
+            </script>";
+        }
     }
 }   
 
-// Handle removing an item from the cart
+// After remove item operation
 if (isset($_POST['remove_item'])) {
     $menu_id = $_POST['menu_id'];
-    unset($_SESSION['cart'][$menu_id]);
+    $delete_sql = "DELETE FROM cart_items WHERE user_id = ? AND menu_id = ?";
+    $delete_stmt = $conn->prepare($delete_sql);
+    $delete_stmt->bind_param('ii', $user_id, $menu_id);
+    if ($delete_stmt->execute()) {
+        echo "<script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Item removed from cart successfully!'
+            });
+        </script>";
+    } else {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to remove item from cart.'
+            });
+        </script>";
+    }
 }
 
-// Calculate the total price of the cart
+// Fetch cart items from database with menu details
+$cart_sql = "SELECT ci.*, m.name, m.price, m.image 
+             FROM cart_items ci 
+             JOIN menu m ON ci.menu_id = m.menu_id 
+             WHERE ci.user_id = ?";
+$cart_stmt = $conn->prepare($cart_sql);
+$cart_stmt->bind_param('i', $user_id);
+$cart_stmt->execute();
+$cart_result = $cart_stmt->get_result();
+
+// Initialize cart items array
+// Remove this first initialization and loop since it's redundant
+// $cart_items = [];
+// while ($item = $cart_result->fetch_assoc()) {
+//     $cart_items[] = $item;
+// }
+
+// Keep only this section for fetching cart items
 $total_price = 0;
-foreach ($_SESSION['cart'] as $item) {
+$cart_items = [];
+while ($item = $cart_result->fetch_assoc()) {
+    $cart_items[$item['menu_id']] = $item;
     $total_price += $item['price'] * $item['quantity'];
 }
+
+// Update session cart to match database
+$_SESSION['cart'] = $cart_items;
 ?>
 
 
@@ -53,6 +121,8 @@ foreach ($_SESSION['cart'] as $item) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart - The Golden Spoon</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       :root {
             --primary: #ff9f1c;
@@ -178,29 +248,51 @@ foreach ($_SESSION['cart'] as $item) {
         .cart-item-details .price {
             font-size: 1.2em;
             color: #f39c12;
-        }
+        }   
 
         .cart-item-actions {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
         }
 
-        .cart-item-actions input {
-            width: 50px;
+        .cart-item-actions input[type="number"] {
+            width: 60px;
             padding: 5px;
             font-size: 1em;
             text-align: center;
+            margin-bottom: 5px;
         }
 
         .cart-item-actions button {
-            background-color: #e74c3c;
+            width: 100px;
             color: white;
             border: none;
-            padding: 5px;
+            padding: 8px;
             font-size: 1em;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 5px;
+            margin: 2px 0;
+        }
+
+        .update-btn {
+            background-color: #2ecc71;
+        }
+
+        .update-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .remove-btn {
+            background-color: #e74c3c;
+        }
+
+        .remove-btn:hover {
+            background-color: #c0392b;
+        }
+        .cart-item-actions button[name="update_quantity"] {
+            background-color: #2ecc71;
         }
 
         .cart-item-actions button:hover {
@@ -225,9 +317,16 @@ foreach ($_SESSION['cart'] as $item) {
             text-decoration: none;
             border-radius: 5px;
             margin-top: 30px;
+            border: none;
+            cursor: pointer;
         }
 
-        .checkout-btn:hover {
+        .checkout-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .checkout-btn:hover:not(:disabled) {
             background-color: #e67e22;
         }
 
@@ -254,39 +353,154 @@ foreach ($_SESSION['cart'] as $item) {
     <div class="container">
         <h2>Your Cart</h2>
 
-        <?php if (!empty($_SESSION['cart'])): ?>
-            <?php foreach ($_SESSION['cart'] as $menu_id => $item): ?>
-                <div class="cart-item">
-                    <img src="images/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
-                    <div class="cart-item-details">
-                        <h3><?php echo htmlspecialchars($item['name']); ?></h3>
-                        
-                        <p class="price">PHP:<?php echo number_format($item['price'], 2); ?></p>
-                    </div>
-                    <div class="cart-item-actions">
-                        <form action="cart.php" method="POST">
-                            <input type="hidden" name="menu_id" value="<?php echo $menu_id; ?>">
+        <?php if (!empty($cart_items)): ?>
+            <form id="checkout-form" action="checkout.php" method="POST">
+                <?php foreach ($cart_items as $item): ?>
+                    <div class="cart-item">
+                        <input type="checkbox" class="item-checkbox" 
+                               name="selected_items[]" 
+                               value="<?php echo $item['menu_id']; ?>" 
+                               data-price="<?php echo ($item['price'] * $item['quantity']); ?>">
+                        <img src="images/<?php echo htmlspecialchars($item['image']); ?>" 
+                             alt="<?php echo htmlspecialchars($item['name']); ?>">
+                        <div class="cart-item-details">
+                            <h3><?php echo htmlspecialchars($item['name']); ?></h3>
+                            <p class="price">PHP <?php echo number_format($item['price'], 2); ?></p>
+                            <p>Quantity: <?php echo $item['quantity']; ?></p>
+                            <p>Subtotal: PHP <?php echo number_format($item['price'] * $item['quantity'], 2); ?></p>
+                        </div>
+                        <div class="cart-item-actions">
+                            <input type="hidden" name="menu_id" value="<?php echo $item['menu_id']; ?>">
                             <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="1" required>
-                            <button type="submit" name="update_quantity">Update</button>
-                        </form>
-                        <form action="cart.php" method="POST">
-                            <input type="hidden" name="menu_id" value="<?php echo $menu_id; ?>">
-                            <button type="submit" name="remove_item">Remove</button>
-                        </form>
+                            <button type="button" onclick="updateQuantity(<?php echo $item['menu_id']; ?>, this)" class="update-btn">Update</button>
+                            <button type="button" onclick="removeItem(<?php echo $item['menu_id']; ?>, this)" class="remove-btn">Remove</button>
+                        </div>
                     </div>
+                <?php endforeach; ?>
+
+                <div class="total-price">
+                    Total: PHP <span id="total">0.00</span>
                 </div>
-            <?php endforeach; ?>
 
-            <div class="total-price">
-                Total: $<?php echo number_format($total_price, 2); ?>
-            </div>
-
-            <a href="checkout.php" class="checkout-btn">Proceed to Checkout</a>
+                <input type="hidden" name="selected_items" id="selected-items-input">
+                <button type="submit" class="checkout-btn" disabled id="checkout-button">Proceed to Checkout</button>
+            </form>
         <?php else: ?>
             <p>Your cart is empty.</p>
         <?php endif; ?>
-
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const totalSpan = document.getElementById('total');
+            const checkoutButton = document.getElementById('checkout-button');
+            const checkoutForm = document.getElementById('checkout-form');
+            const selectedItemsInput = document.getElementById('selected-items-input');
+
+            function updateTotal() {
+                let total = 0;
+                let selectedItems = [];
+
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        total += parseFloat(checkbox.dataset.price);
+                        selectedItems.push(checkbox.value);
+                    }
+                });
+
+                totalSpan.textContent = total.toFixed(2);
+                selectedItemsInput.value = JSON.stringify(selectedItems);
+                
+                // Enable/disable checkout button based on selection
+                checkoutButton.disabled = selectedItems.length === 0;
+            }
+
+            // Add event listeners to all checkboxes
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateTotal);
+            });
+
+            // Initialize total
+            updateTotal();
+        });
+    </script>
+
+<script>
+    function updateQuantity(menuId, button) {
+        const quantityInput = button.parentElement.querySelector('input[type="number"]');
+        const quantity = quantityInput.value;
+
+        fetch('cart.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `update_quantity=1&menu_id=${menuId}&quantity=${quantity}`
+        })
+        .then(response => response.text())
+        .then(html => {
+            // Refresh the page to update the cart
+            location.reload();
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update cart quantity.'
+            });
+        });
+    }
+
+    function removeItem(menuId, button) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, remove it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('cart.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `remove_item=1&menu_id=${menuId}`
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Remove the cart item from DOM
+                    const cartItem = button.closest('.cart-item');
+                    cartItem.remove();
+                    
+                    // Update total price
+                    updateTotal();
+                    
+                    // Show success message
+                    Swal.fire(
+                        'Removed!',
+                        'Item has been removed from cart.',
+                        'success'
+                    );
+                    
+                    // Reload if cart is empty
+                    if (document.querySelectorAll('.cart-item').length === 0) {
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to remove item from cart.'
+                    });
+                });
+            }
+        });
+    }
+</script>
 </body>
 </html>

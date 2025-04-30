@@ -34,7 +34,6 @@ function getStatusClass($status) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         :root {
             --primary: #FFD700;
@@ -223,6 +222,11 @@ function getStatusClass($status) {
                         </li>
                        
                         <li class="nav-item">
+                            <a class="nav-link" href="/admin/reports.php">
+                                <i class="fas fa-chart-line"></i> Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="/admin/settings.php">
                                 <i class="fas fa-cog"></i> Settings
                             </a>
@@ -237,7 +241,7 @@ function getStatusClass($status) {
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9  main-content">
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Order Management</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
@@ -431,96 +435,6 @@ function getStatusClass($status) {
     // Initial load of the table
     updateTable();
 });
-
-
-function viewOrder(orderId) {
-        const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-        const modalContent = document.getElementById('orderDetailsContent');
-        modalContent.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        `;
-        modal.show();
-
-        fetch(`get_order_details.php?order_id=${orderId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    modalContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
-                    return;
-                }
-                
-                modalContent.innerHTML = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <div class="mb-4">
-                                        <h6 class="fw-bold">#ORD-${String(data.order_id).padStart(4, '0')}</h6>
-                                        <p class="text-muted mb-1"><i class="fas fa-user me-2"></i>Customer: ${data.first_name} ${data.last_name}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-phone me-2"></i>Phone: ${data.phone}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-truck me-2"></i>Service Type: ${data.service_type ? data.service_type.charAt(0).toUpperCase() + data.service_type.slice(1) : 'N/A'}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-credit-card me-2"></i>Payment Method: ${data.payment_method ? data.payment_method.replace('_', ' ').toUpperCase() : 'N/A'}</p>
-                                        <p class="text-muted mb-1"><i class="fas fa-money-bill-wave me-2"></i>Payment Status: ${data.payment_status ? data.payment_status.charAt(0).toUpperCase() + data.payment_status.slice(1) : 'N/A'}</p>
-                                        <p class="text-muted"><i class="fas fa-map-marker-alt me-2"></i>Delivery Address: ${data.delivery_address || 'N/A'}</p>
-                                    </div>
-                                    <hr>
-                                    <h6 class="fw-bold mb-3">Order Items</h6>
-                                    <ul class="list-group list-group-flush mb-3">
-                                        ${data.items.map(item => `
-                                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                                                <div>
-                                                    <span class="fw-medium">${item.name}</span>
-                                                    <br>
-                                                    <small class="text-muted">Quantity: ${item.quantity}</small>
-                                                </div>
-                                                <span>$${(item.price * item.quantity).toFixed(2)}</span>
-                                            </li>
-                                        `).join('')}
-                                    </ul>
-                                    <div class="d-flex justify-content-between align-items-center py-3 border-top">
-                                        <h6 class="fw-bold mb-0">Total:</h6>
-                                        <h6 class="fw-bold mb-0">$${data.total_amount}</h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-grid gap-2 mt-3">
-                                ${data.order_status === 'pending' ? 
-                                    `<button class="btn btn-warning" onclick="updateOrderStatus(${data.order_id}, 'preparing')"><i class="fas fa-utensils me-2"></i>Assign to Kitchen</button>` : ''}
-                                ${data.order_status === 'preparing' ? 
-                                    `<button class="btn btn-success" onclick="updateOrderStatus(${data.order_id}, 'ready')"><i class="fas fa-check me-2"></i>Mark as Ready</button>` : ''}
-                                ${data.order_status === 'pending' ? 
-                                    `<button class="btn btn-danger" onclick="updateOrderStatus(${data.order_id}, 'cancelled')"><i class="fas fa-times me-2"></i>Cancel Order</button>` : ''}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-4">Order Status</h6>
-                                    <div class="timeline">
-                                        <div class="timeline-item">
-                                            <h6 class="fw-bold">Current Status</h6>
-                                            <p class="text-muted small mb-1">${new Date(data.created_at).toLocaleString()}</p>
-                                            <p class="mb-0">${data.order_status.charAt(0).toUpperCase() + data.order_status.slice(1)}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            })
-            .catch(error => {
-                modalContent.innerHTML = `<div class="alert alert-danger">Error loading order details. Please try again.</div>`;
-            });
-    }
-
-    
                 </script>
-
-                
 </html>
 

@@ -224,6 +224,22 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
         .paypal-button-container {
             margin-top: 30px;
         }
+    .item-notes {
+        width: 100%;
+        margin-top: 10px;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        resize: vertical;
+        min-height: 60px;
+        font-family: inherit;
+    }
+
+    .item-notes:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 5px rgba(255, 159, 28, 0.3);
+    }
 
         .dine-option {
             margin-top: 30px;
@@ -272,6 +288,110 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
         }
 
     </style>
+    <script>
+        // Add this at the beginning of your script section
+        // Sync notes from textarea to hidden input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.item-notes').forEach(function(textarea) {
+                textarea.addEventListener('input', function() {
+                    const menuId = this.dataset.menuId;
+                    document.getElementById('notes-hidden-' + menuId).value = this.value;
+                });
+                // Initial sync on page load
+                const menuId = textarea.dataset.menuId;
+                document.getElementById('notes-hidden-' + menuId).value = textarea.value;
+            });
+        });
+
+        // Toggle the delivery address field visibility based on the selection
+        document.querySelectorAll('input[name="service_type"]').forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (document.getElementById('delivery').checked) {
+                    document.getElementById('delivery-address').style.display = 'block';
+                } else {
+                    document.getElementById('delivery-address').style.display = 'none';
+                }
+            });
+        });
+
+        // Toggle between saved and new address
+        function toggleAddressForm() {
+            const addressOption = document.getElementById('address_option');
+            const savedAddresses = document.getElementById('saved-addresses');
+            const newAddressForm = document.getElementById('new-address-form');
+            
+            if (addressOption.value === 'saved') {
+                savedAddresses.style.display = 'block';
+                newAddressForm.style.display = 'none';
+            } else {
+                savedAddresses.style.display = 'none';
+                newAddressForm.style.display = 'block';
+            }
+        }
+
+        // Initial toggle and add event listener
+        document.getElementById('address_option').addEventListener('change', toggleAddressForm);
+        toggleAddressForm(); // Call immediately to set initial state
+
+
+        // Payment method toggle functionality
+        document.querySelectorAll('input[name="payment_method"]').forEach(function(input) {
+            input.addEventListener('change', function() {
+                const paypalContainer = document.getElementById('paypal-button-container');
+                if (this.value === 'paypal') {
+                    paypalContainer.style.display = 'block';
+                } else {
+                    paypalContainer.style.display = 'none';
+                }
+            });
+        });
+
+        // Initialize with PayPal hidden (since COD is default)
+        document.getElementById('paypal-button-container').style.display = 'none';
+
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            currency_code: 'PHP', // Philippine Peso
+                            value: <?php echo $total_price?>      // Total amount
+                        },
+                        description: 'Payment for your order'
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    Swal.fire({
+                        title: 'Transaction Details',
+                        text: JSON.stringify(details, null, 2),
+                        icon: 'info'
+                    });
+                    // // Redirect or handle success here
+                    // window.location.href = '/success.html';
+                });
+            },
+            onCancel: function(data) {
+                Swal.fire({
+                    title: 'Payment Cancelled',
+                    text: 'You have cancelled the payment process.',
+                    icon: 'warning'
+                });
+                // // Redirect or handle cancellation here
+                // window.location.href = '/cancel.html';
+            },
+            onError: function(err) {
+                console.error('Error during payment:', err);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred during payment.',
+                    icon: 'error'
+                });
+            }
+        }).render('#paypal-button-container');
+    </script>
 </head>
 <body>
 
@@ -302,6 +422,7 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
                         <p>Quantity: <?php echo htmlspecialchars($item['quantity']); ?></p>
                         <p class="price">PHP:<?php echo number_format($item['price'], 2); ?></p>
                         <p class="subtotal">Subtotal: PHP:<?php echo number_format($item['price'] * $item['quantity'], 2); ?></p>
+                        <textarea name="notes[<?php echo $menu_id; ?>]" class="item-notes" data-menu-id="<?php echo $menu_id; ?>" placeholder="Add special instructions for this item..."><?php echo isset($item['notes']) ? htmlspecialchars($item['notes']) : ''; ?></textarea>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -316,6 +437,7 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
                     <input type="hidden" name="cart[<?php echo $menu_id; ?>][quantity]" value="<?php echo $item['quantity']; ?>">
                     <input type="hidden" name="cart[<?php echo $menu_id; ?>][price]" value="<?php echo $item['price']; ?>">
                     <input type="hidden" name="cart[<?php echo $menu_id; ?>][name]" value="<?php echo $item['name']; ?>">
+                    <input type="hidden" name="cart[<?php echo $menu_id; ?>][notes]" id="notes-hidden-<?php echo $menu_id; ?>" value="<?php echo isset($item['notes']) ? htmlspecialchars($item['notes']) : ''; ?>">
                 <?php endforeach; ?>
                 <input type="hidden" name="total_amount" value="<?php echo $total_price; ?>">
 

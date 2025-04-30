@@ -21,7 +21,6 @@ class ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19
         ),
         'P' => 
         array (
-            'Psr\\Log\\' => 8,
             'PhpOption\\' => 10,
             'PHPMailer\\PHPMailer\\' => 20,
         ),
@@ -48,10 +47,6 @@ class ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
-        'Psr\\Log\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
-        ),
         'PhpOption\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
@@ -70,16 +65,6 @@ class ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19
         ),
     );
 
-    public static $prefixesPsr0 = array (
-        'P' => 
-        array (
-            'PayPal' => 
-            array (
-                0 => __DIR__ . '/..' . '/paypal/rest-api-sdk-php/lib',
-            ),
-        ),
-    );
-
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
@@ -94,7 +79,6 @@ class ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19::$prefixesPsr0;
             $loader->classMap = ComposerStaticInitb3c4a292d48f8f4671fbdd3cab1f1b19::$classMap;
 
         }, null, ClassLoader::class);

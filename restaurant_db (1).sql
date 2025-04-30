@@ -3,10 +3,13 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 31, 2025 at 07:40 AM
+-- Generation Time: Apr 05, 2025 at 08:40 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
+DROP DATABASE IF EXISTS `restaurant_db`;
+CREATE DATABASE  `restaurant_db`;
+USE  `restaurant_db`;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -42,6 +45,28 @@ INSERT INTO `address` (`user_id`, `address`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `cart_items`
+--
+
+CREATE TABLE `cart_items` (
+  `cart_item_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `menu_id` int(11) NOT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cart_items`
+--
+
+INSERT INTO `cart_items` (`cart_item_id`, `user_id`, `menu_id`, `quantity`, `created_at`) VALUES
+(1, 5, 2, 123, '2025-04-04 09:09:32'),
+(2, 5, 3, 1, '2025-04-04 09:14:30');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `menu`
 --
 
@@ -60,15 +85,15 @@ CREATE TABLE `menu` (
 --
 
 INSERT INTO `menu` (`menu_id`, `name`, `description`, `price`, `quantity`, `image`, `category`) VALUES
-(1, 'Spaghetti Bolognese', 'Classic Italian pasta with rich meat sauce', 12.99, 50, 'Spaghetti Bolognese.jpg', 'Spaghetti'),
-(2, 'Chicken Caesar Salad', 'Crispy romaine lettuce with grilled chicken and Caesar dressing', 9.99, 30, 'Chicken Caesar Salad.jpg', 'Salad'),
-(3, 'Cheeseburger', 'Juicy beef patty with cheese, lettuce, and tomato', 8.99, 40, 'cheeseburger.jpg', 'burger'),
-(4, 'Margherita Pizza', 'Tomato, mozzarella, and basil on a crispy crust', 10.99, 25, 'Margherita Pizza.jpg', 'Pizza'),
-(5, 'Braised Pork in Sweet Soy Sauce', 'Tender pieced of pork braised in a flavorful sauce with a touch of heat', 11.99, 35, 'Braised Pork in Sweet Soy Sauce.jpg', 'Pork'),
-(6, 'Vegetarian Pizza', 'Tomato, mozzarella, and various fresh vegetables', 9.49, 20, 'Vegetarian Pizza.jpg', 'Pizza'),
-(7, 'Sticky Honey & Chilli Pork', 'Delicious marinated pork in a chilli honey glaze with ginger and garlic.\r\n', 10.49, 50, 'Sticky Honey & Chilli Pork.jpg', 'Pork'),
-(8, 'Mexican Grilled Chicken Bowl', 'Grilled chicken, Mexican style, served over a bed of quinoa', 4.99, 50, 'Mexican Grilled Chicken Bowl.jpg', 'Chicken'),
-(9, 'Bicol Express ', 'The ultimate comfort food! With pork cubes cooked in coconut milk and chili peppers, it\'s rich, creamy, spicy and delicious!', 5.99, 40, 'Bicol Express .jpg', 'Pork');
+(1, 'Spaghetti Bolognese', 'Classic Italian pasta with rich meat sauce', 685.33, 0, 'Spaghetti Bolognese.jpg', 'Spaghetti'),
+(2, 'Chicken Caesar Salad', 'Crispy romaine lettuce with grilled chicken and Caesar dressing', 570.53, 29, 'Chicken Caesar Salad.jpg', 'Salad'),
+(3, 'Cheeseburger', 'Juicy beef patty with cheese, lettuce, and tomato', 513.42, 40, 'cheeseburger.jpg', 'burger'),
+(4, 'Margherita Pizza', 'Tomato, mozzarella, and basil on a crispy crust', 627.64, 25, 'Margherita Pizza.jpg', 'Pizza'),
+(5, 'Braised Pork in Sweet Soy Sauce', 'Tender pieced of pork braised in a flavorful sauce with a touch of heat', 684.75, 35, 'Braised Pork in Sweet Soy Sauce.jpg', 'Pork'),
+(6, 'Vegetarian Pizza', 'Tomato, mozzarella, and various fresh vegetables', 541.98, 20, 'Vegetarian Pizza.jpg', 'Pizza'),
+(7, 'Sticky Honey & Chilli Pork', 'Delicious marinated pork in a chilli honey glaze with ginger and garlic.\r\n', 599.09, 50, 'Sticky Honey & Chilli Pork.jpg', 'Pork'),
+(8, 'Mexican Grilled Chicken Bowl', 'Grilled chicken, Mexican style, served over a bed of quinoa', 284.98, 50, 'Mexican Grilled Chicken Bowl.jpg', 'Chicken'),
+(9, 'Bicol Express ', 'The ultimate comfort food! With pork cubes cooked in coconut milk and chili peppers, it\'s rich, creamy, spicy and delicious!', 342.09, 40, 'Bicol Express .jpg', 'Pork');
 
 -- --------------------------------------------------------
 
@@ -120,16 +145,24 @@ INSERT INTO `orders` (`order_id`, `user_id`, `service_type`, `payment_method`, `
 (25, 5, 'pickup', 'bank_transfer', 'paid', 'ready', 9.99, '2025-03-17 03:06:43', '2025-03-17 03:06:43'),
 (26, 5, 'pickup', 'bank_transfer', 'paid', 'ready', 9.99, '2025-03-17 03:07:16', '2025-03-17 03:07:16'),
 (27, 5, 'pickup', 'bank_transfer', 'paid', 'ready', 9.99, '2025-03-17 03:08:07', '2025-03-17 03:08:07'),
-(28, 5, 'pickup', 'bank_transfer', 'paid', 'ready', 9.99, '2025-03-17 03:08:09', '2025-03-17 03:08:09'),
-(29, 5, 'pickup', 'bank_transfer', 'paid', 'ready', 9.99, '2025-03-17 03:08:44', '2025-03-17 03:08:44'),
-(30, 5, 'delivery', 'gcash', 'paid', 'ready', 9.99, '2025-03-17 03:12:05', '2025-03-17 03:12:05'),
-(31, 5, 'delivery', 'gcash', 'paid', 'ready', 9.99, '2025-03-17 03:13:50', '2025-03-17 03:13:50'),
-(32, 5, 'delivery', 'gcash', 'paid', 'ready', 9.99, '2025-03-17 03:15:00', '2025-03-17 03:15:00'),
-(33, 5, 'pickup', 'paypal', 'paid', 'ready', 9.99, '2025-03-17 03:15:42', '2025-03-17 03:15:42'),
-(34, 5, 'pickup', 'gcash', 'paid', 'ready', 9.99, '2025-03-31 03:37:00', '2025-03-31 03:37:00'),
-(35, 5, 'pickup', 'paypal', 'paid', 'pending', 9.99, '2025-03-31 03:46:28', '2025-03-31 03:46:28'),
-(39, 5, 'delivery', 'bank_transfer', 'pending', 'pending', 9.99, '2025-03-31 04:09:48', '2025-03-31 04:09:48'),
-(40, 5, 'dine-in', 'paypal', 'pending', 'pending', 19.98, '2025-03-31 04:10:04', '2025-03-31 04:10:04');
+(28, 5, 'pickup', 'bank_transfer', 'paid', 'delivered', 9.99, '2025-03-17 03:08:09', '2025-03-31 07:55:09'),
+(29, 5, 'pickup', 'bank_transfer', 'paid', 'delivered', 9.99, '2025-03-17 03:08:44', '2025-03-31 07:53:57'),
+(30, 5, 'delivery', 'gcash', 'paid', 'delivered', 9.99, '2025-03-17 03:12:05', '2025-03-31 07:53:47'),
+(31, 5, 'delivery', 'gcash', 'paid', 'delivered', 9.99, '2025-03-17 03:13:50', '2025-03-31 07:53:20'),
+(32, 5, 'delivery', 'gcash', 'paid', 'delivered', 9.99, '2025-03-17 03:15:00', '2025-03-31 07:52:36'),
+(33, 5, 'pickup', 'paypal', 'paid', 'delivered', 9.99, '2025-03-17 03:15:42', '2025-03-31 08:12:28'),
+(34, 5, 'pickup', 'gcash', 'paid', 'delivered', 9.99, '2025-03-31 03:37:00', '2025-03-31 08:11:21'),
+(35, 5, 'pickup', 'paypal', 'paid', 'delivered', 9.99, '2025-03-31 03:46:28', '2025-03-31 08:10:32'),
+(39, 5, 'delivery', 'bank_transfer', 'pending', 'delivered', 9.99, '2025-03-31 04:09:48', '2025-03-31 08:09:03'),
+(40, 5, 'dine-in', 'paypal', 'pending', 'delivered', 19.98, '2025-03-31 04:10:04', '2025-03-31 07:51:30'),
+(41, 5, 'delivery', 'gcash', 'pending', 'delivered', 31.97, '2025-03-31 08:17:13', '2025-03-31 09:34:09'),
+(42, 5, 'delivery', 'gcash', 'pending', 'ready', 28.97, '2025-03-31 12:44:52', '2025-03-31 12:46:11'),
+(43, 5, 'dine-in', 'paypal', 'pending', 'cancelled', 9.99, '2025-04-01 07:16:55', '2025-04-01 07:17:48'),
+(44, 5, 'delivery', 'cod', 'pending', 'pending', 70688.61, '2025-04-04 10:06:11', '2025-04-04 10:06:11'),
+(45, 5, 'delivery', 'cod', 'pending', 'pending', 70688.61, '2025-04-04 10:21:30', '2025-04-04 10:21:30'),
+(46, 5, 'delivery', 'cod', 'pending', 'pending', 70688.61, '2025-04-04 10:23:00', '2025-04-04 10:23:00'),
+(47, 5, 'delivery', 'cod', 'pending', 'pending', 70688.61, '2025-04-04 10:24:42', '2025-04-04 10:24:42'),
+(48, 5, 'delivery', 'cod', 'pending', 'pending', 70688.61, '2025-04-04 10:26:37', '2025-04-04 10:26:37');
 
 -- --------------------------------------------------------
 
@@ -146,6 +179,23 @@ CREATE TABLE `order_history` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `order_history`
+--
+
+INSERT INTO `order_history` (`history_id`, `order_id`, `status`, `description`, `created_by`, `created_at`) VALUES
+(1, 39, 'preparing', NULL, 5, '2025-03-31 07:47:41'),
+(3, 39, 'delivered', NULL, 6, '2025-03-31 08:09:03'),
+(4, 35, 'delivered', NULL, 6, '2025-03-31 08:10:32'),
+(5, 34, 'delivered', NULL, 6, '2025-03-31 08:11:21'),
+(6, 33, 'delivered', NULL, 6, '2025-03-31 08:12:28'),
+(7, 41, 'preparing', NULL, 6, '2025-03-31 08:17:28'),
+(8, 41, 'ready', NULL, 6, '2025-03-31 09:34:07'),
+(9, 41, 'delivered', NULL, 6, '2025-03-31 09:34:09'),
+(10, 42, 'preparing', NULL, 6, '2025-03-31 12:46:00'),
+(11, 42, 'ready', NULL, 6, '2025-03-31 12:46:11'),
+(12, 43, 'cancelled', NULL, 6, '2025-04-01 07:17:48');
+
 -- --------------------------------------------------------
 
 --
@@ -159,16 +209,23 @@ CREATE TABLE `order_items` (
   `quantity` int(11) NOT NULL,
   `unit_price` decimal(10,2) NOT NULL,
   `subtotal` decimal(10,2) NOT NULL,
-  `price` decimal(10,2) DEFAULT 0.00
+  `price` decimal(10,2) DEFAULT 0.00,
+  `notes` varchar(5000) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_items`
 --
 
-INSERT INTO `order_items` (`id`, `order_id`, `menu_id`, `quantity`, `unit_price`, `subtotal`, `price`) VALUES
-(1, 39, 2, 1, 9.99, 9.99, 0.00),
-(2, 40, 2, 2, 9.99, 19.98, 0.00);
+INSERT INTO `order_items` (`id`, `order_id`, `menu_id`, `quantity`, `unit_price`, `subtotal`, `price`, `notes`) VALUES
+(11, 45, 2, 123, 570.53, 70175.19, 0.00, ''),
+(12, 45, 3, 1, 513.42, 513.42, 0.00, ''),
+(13, 46, 2, 123, 570.53, 70175.19, 0.00, ''),
+(14, 46, 3, 1, 513.42, 513.42, 0.00, ''),
+(15, 47, 2, 123, 570.53, 70175.19, 0.00, 'note test '),
+(16, 47, 3, 1, 513.42, 513.42, 0.00, ''),
+(17, 48, 2, 123, 570.53, 70175.19, 0.00, 'asdsad'),
+(18, 48, 3, 1, 513.42, 513.42, 0.00, '');
 
 -- --------------------------------------------------------
 
@@ -315,11 +372,20 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `phone`, `password`, `role`, `created_at`, `secret_key`, `profile_picture`) VALUES
-(5, 'jem', 'autria', 'jemcarlo46@gmail.com', '09207766194', '$2y$10$z3zc/QzwA4iZbcMDHVVRheUiL97GLNagpmcIBaYefy.VWR2ezczuq', NULL, '2025-03-17 01:31:15', '123', NULL);
+(5, 'jem', 'autria', 'jemcarlo46@gmail.com', '09207766194', '$2y$10$z3zc/QzwA4iZbcMDHVVRheUiL97GLNagpmcIBaYefy.VWR2ezczuq', NULL, '2025-03-17 01:31:15', '123', NULL),
+(6, 'Admin', 'User', 'admin@admin.com', '1234567890', '$2y$10$AMcMKDWXSBKsdaNE3FfzXeWyR5IgbIpwoGP0rzHGZObaGpfrpD1Ge', 'admin', '2025-03-31 07:57:51', 'admin123', NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD PRIMARY KEY (`cart_item_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `menu_id` (`menu_id`);
 
 --
 -- Indexes for table `menu`
@@ -398,28 +464,34 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  MODIFY `cart_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `menu`
 --
 ALTER TABLE `menu`
-  MODIFY `menu_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `menu_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `order_history`
 --
 ALTER TABLE `order_history`
-  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `order_status_history`
@@ -449,11 +521,18 @@ ALTER TABLE `tables`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD CONSTRAINT `cart_items_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `cart_items_ibfk_2` FOREIGN KEY (`menu_id`) REFERENCES `menu` (`menu_id`);
 
 --
 -- Constraints for table `orders`

@@ -46,21 +46,47 @@ $result = $stmt->get_result();
 
 // Handle Add to Cart action
 if (isset($_POST['add_to_cart'])) {
-    // Get menu item details
     $menu_id = $_POST['menu_id'];
-    $sql = "SELECT * FROM menu WHERE menu_id = ?";
+    
+    // First, check if the menu item exists and has available quantity
+    $sql = "SELECT * FROM menu WHERE menu_id = ? AND quantity > 0";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('i', $menu_id);
     $stmt->execute();
     $item_result = $stmt->get_result();
     $item = $item_result->fetch_assoc();
 
-    // Add the item to the session cart
     if ($item) {
-        // Check if the item is already in the cart
-        if (isset($_SESSION['cart'][$menu_id])) {
-            $_SESSION['cart'][$menu_id]['quantity']++;
+        // Check if the item is already in the user's cart
+        $check_cart = "SELECT * FROM cart_items WHERE user_id = ? AND menu_id = ?";
+        $check_stmt = $conn->prepare($check_cart);
+        $check_stmt->bind_param('ii', $user_id, $menu_id);
+        $check_stmt->execute();
+        $cart_result = $check_stmt->get_result();
+
+        if ($cart_result->num_rows > 0) {
+            // Check if adding one more exceeds available quantity
+            $cart_item = $cart_result->fetch_assoc();
+            if ($cart_item['quantity'] + 1 <= $item['quantity']) {
+                // Item exists in cart, update quantity
+                $update_sql = "UPDATE cart_items SET quantity = quantity + 1 WHERE user_id = ? AND menu_id = ?";
+                $update_stmt = $conn->prepare($update_sql);
+                $update_stmt->bind_param('ii', $user_id, $menu_id);
+                $update_stmt->execute();
+
+                // Update session cart
+                $_SESSION['cart'][$menu_id]['quantity']++;
+            } else {
+                echo "<script>alert('Not enough quantity available!');</script>";
+            }
         } else {
+            // Item doesn't exist in cart, insert new record
+            $insert_sql = "INSERT INTO cart_items (user_id, menu_id, quantity) VALUES (?, ?, 1)";
+            $insert_stmt = $conn->prepare($insert_sql);
+            $insert_stmt->bind_param('ii', $user_id, $menu_id);
+            $insert_stmt->execute();
+
+            // Update session cart
             $_SESSION['cart'][$menu_id] = [
                 'name' => $item['name'],
                 'price' => $item['price'],
@@ -68,6 +94,8 @@ if (isset($_POST['add_to_cart'])) {
                 'image' => $item['image']
             ];
         }
+    } else {
+        echo "<script>alert('Item is out of stock!');</script>";
     }
 }
 ?>
@@ -317,10 +345,13 @@ if (isset($_POST['add_to_cart'])) {
                             <h3><?php echo htmlspecialchars($row['name']); ?></h3>
                             <p><?php echo htmlspecialchars($row['description']); ?></p>
                             <p class="price">PHP:<?php echo number_format($row['price'], 2); ?></p>
+                            <p>Available: <?php echo $row['quantity']; ?></p>
                         </div>
                         <form action="menu.php" method="POST">
                             <input type="hidden" name="menu_id" value="<?php echo $row['menu_id']; ?>">
-                            <button type="submit" name="add_to_cart" class="add-to-cart-btn">Add to Cart</button>
+                            <button type="submit" name="add_to_cart" class="add-to-cart-btn" <?php echo $row['quantity'] <= 0 ? 'disabled' : ''; ?>>
+                                <?php echo $row['quantity'] <= 0 ? 'Out of Stock' : 'Add to Cart'; ?>
+                            </button>
                         </form>
                     </div>
                 <?php endwhile; ?>
