@@ -34,7 +34,6 @@ function getStatusClass($status) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
         :root {
             --primary: #FFD700;
@@ -223,6 +222,11 @@ function getStatusClass($status) {
                         </li>
                        
                       
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/reports.php">
+                                <i class="fas fa-chart-line"></i> Reports
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/admin/settings.php">
                                 <i class="fas fa-cog"></i> Settings
