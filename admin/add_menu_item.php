@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql = "INSERT INTO menu (name, description, price, quantity, image, category) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'ssdiss', $name, $description, $price, $quantity, $image, $category);
-    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_execute($stmt);
     
-    if (mysqli_query($conn, $sql)) {
+    if ($result) {
         header('Location: menu.php?success=1');
     } else {
         header('Location: menu.php?error=1');
