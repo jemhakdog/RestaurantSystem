@@ -455,6 +455,8 @@ if ($result) {
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
     function viewOrder(orderId) {
@@ -558,12 +560,21 @@ if ($result) {
             } else {
                 // Actual error case
                 console.error('Error:', data.message);
-                alert('Error updating status: ' + data.message);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'An error occurred while updating the order status'
+                });
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred while updating the order status');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while updating the order status',
+                confirmButtonColor: '#FFD700'
+            });
         });
     }
 

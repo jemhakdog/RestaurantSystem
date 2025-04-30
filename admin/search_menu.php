@@ -7,7 +7,7 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     $result = mysqli_query($conn, $sql);
     if (!$result) {
         error_log('MySQL Error: '.mysqli_error($conn));
-        echo "<script>alert('Error: An error occurred while searching the menu.');</script>";
+        echo "<script>Swal.fire({icon: 'error', title: 'Error', text: 'An error occurred while searching the menu.'});</script>";
     }
     if (mysqli_num_rows($result) > 0){
         while($row = mysqli_fetch_assoc($result)){

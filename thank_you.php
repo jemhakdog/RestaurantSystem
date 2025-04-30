@@ -40,7 +40,7 @@ $items_for_email = array_map(function($item) {
 // Send confirmation email
 $mailer = new Mailer();
 $customer_name = $order['first_name'] . ' ' . $order['last_name'];
-$delivery_address = ($order['service_type'] === 'delivery') ? $order['delivery_address'] : null;
+$delivery_address = ($order['service_type'] === 'delivery' && isset($order['delivery_address'])) ? $order['delivery_address'] : null;
 $mailer->sendOrderConfirmation(
     $customer_name,
     $order['email'],

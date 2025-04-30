@@ -12,7 +12,14 @@ if (!isset($_SESSION['user_id'])) {
 include('db.php');
 
 // Fetch order history for the logged-in user
-$sql = "SELECT order_id, receipt_date, receipt_number, subtotal, tax_amount, total_amount, payment_method, service_type, customer_name, delivery_address FROM receipts ORDER BY receipt_date DESC";
+$sql = "SELECT o.order_id, o.created_at as order_date, o.payment_method, o.service_type, o.order_status, o.total_amount, 
+       GROUP_CONCAT(CONCAT(m.name, ' (', oi.quantity, 'x)') SEPARATOR ', ') as items
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN menu m ON oi.menu_id = m.menu_id
+WHERE o.user_id = {$_SESSION['user_id']}
+GROUP BY o.order_id
+ORDER BY o.created_at DESC";
 $result = $conn->query($sql);
 
 ?>
@@ -174,29 +181,23 @@ $result = $conn->query($sql);
                     <tr>
                         <th>Order ID</th>
                         <th>Date</th>
-                        <th>Receipt Number</th>
-                        <th>Subtotal</th>
-                        <th>Tax</th>
-                        <th>Total</th>
                         <th>Payment Method</th>
                         <th>Service Type</th>
-                        <th>Customer Name</th>
-                        <th>Delivery Address</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Items</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($row['order_id']); ?></td>
-                            <td><?php echo date('Y-m-d H:i', strtotime($row['receipt_date'])); ?></td>
-                            <td><?php echo htmlspecialchars($row['receipt_number']); ?></td>
-                            <td class="amount">$<?php echo number_format($row['subtotal'], 2); ?></td>
-                            <td class="amount">$<?php echo number_format($row['tax_amount'], 2); ?></td>
-                            <td class="amount">$<?php echo number_format($row['total_amount'], 2); ?></td>
+                            <td><?php echo date('Y-m-d H:i', strtotime($row['order_date'])); ?></td>
                             <td><?php echo htmlspecialchars(ucfirst($row['payment_method'])); ?></td>
                             <td><?php echo htmlspecialchars(ucfirst($row['service_type'])); ?></td>
-                            <td><?php echo htmlspecialchars($row['customer_name']); ?></td>
-                            <td><?php echo $row['delivery_address'] ? htmlspecialchars($row['delivery_address']) : 'N/A'; ?></td>
+                            <td><?php echo htmlspecialchars(ucfirst($row['order_status'])); ?></td>
+                            <td class="amount">₱<?php echo number_format($row['total_amount'], 2); ?></td>
+                            <td><?php echo htmlspecialchars($row['items']); ?></td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

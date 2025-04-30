@@ -24,18 +24,30 @@ try {
     $order_id = $conn->insert_id;
 
     // Save order items
-    if (isset($_POST['cart']) && is_array($_POST['cart'])) {
-        foreach ($_POST['cart'] as $item) {
-            $menu_id = $item['menu_id'];
-            $quantity = $item['quantity'];
-            $unit_price = $item['price'];
-            $subtotal = $quantity * $unit_price;
-            
-            $notes = isset($item['notes']) ? $item['notes'] : '';
-            $stmt = $conn->prepare("INSERT INTO order_items (order_id, menu_id, quantity, unit_price, subtotal, notes) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("iiisss", $order_id, $menu_id, $quantity, $unit_price, $subtotal, $notes);
-            $stmt->execute();
-        }
+    $selected_items = json_decode($_POST['selected_items'] ?? '[]', true);
+    
+        if (isset($_POST['cart']) && is_array($_POST['cart'])) {
+            foreach ($_POST['cart'] as $item) {
+                $menu_id = $item['menu_id'];
+                if (!empty($selected_items) && !in_array($menu_id, $selected_items)) continue;
+                
+                $quantity = $item['quantity'];
+                $unit_price = $item['price'];
+                $subtotal = $quantity * $unit_price;
+                if ($quantity <= 0) {
+                    $quantity = 0;
+                }
+                
+                $notes = isset($item['notes']) ? $item['notes'] : '';
+                $stmt = $conn->prepare("INSERT INTO order_items (order_id, menu_id, quantity, unit_price, subtotal, notes) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("iiisss", $order_id, $menu_id, $quantity, $unit_price, $subtotal, $notes);
+                $stmt->execute();
+                
+                // Update menu quantity only for selected items
+                $update_stmt = $conn->prepare("UPDATE menu SET quantity = quantity - ? WHERE menu_id = ?");
+                $update_stmt->bind_param("ii", $quantity, $menu_id);
+                $update_stmt->execute();
+            }
     }
 
     $conn->commit();

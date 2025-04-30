@@ -77,7 +77,7 @@ if (isset($_POST['add_to_cart'])) {
                 // Update session cart
                 $_SESSION['cart'][$menu_id]['quantity']++;
             } else {
-                echo "<script>alert('Not enough quantity available!');</script>";
+                echo "<script>Swal.fire({icon: 'error', title: 'Not enough quantity', text: 'Not enough quantity available!'});</script>";
             }
         } else {
             // Item doesn't exist in cart, insert new record
@@ -95,7 +95,7 @@ if (isset($_POST['add_to_cart'])) {
             ];
         }
     } else {
-        echo "<script>alert('Item is out of stock!');</script>";
+        echo "<script>Swal.fire({icon: 'error', title: 'Out of stock', text: 'Item is out of stock!'});</script>";
     }
 }
 ?>

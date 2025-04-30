@@ -25,20 +25,32 @@
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    Swal.fire({
+                      icon: 'success',
+                      title: 'Transaction completed',
+                      text: 'Transaction completed by ' + details.payer.name.given_name
+                    });
                     console.log('Transaction details:', details);
                     // // Redirect or handle success here
                     // window.location.href = '/success.html';
                 });
             },
             onCancel: function(data) {
-                alert('Payment cancelled');
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Payment cancelled',
+                  text: 'Payment cancelled'
+                });
                 // // Redirect or handle cancellation here
                 // window.location.href = '/cancel.html';
             },
             onError: function(err) {
                 console.error('Error during payment:', err);
-                alert('An error occurred during payment.');
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'An error occurred during payment.'
+                });
             }
         }).render('#paypal-button-container');
     </script>

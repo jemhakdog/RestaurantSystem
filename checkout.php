@@ -19,6 +19,26 @@ $role = $_SESSION['role'];
 // Database connection
 include('db.php');
 
+// Handle saving new address
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['address'])) {
+    header('Content-Type: application/json');
+    
+    $address = $_POST['address'];
+    $user_id = $_SESSION['user_id'];
+    
+    try {
+        // Insert new address
+        $stmt = $conn->prepare("INSERT INTO address (user_id, address) VALUES (?, ?)");
+        $stmt->bind_param('is', $user_id, $address);
+        $stmt->execute();
+        
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit();
+}
+
 // Fetch user's saved addresses
 $query = "SELECT * FROM address WHERE user_id = ?";
 $stmt = $conn->prepare($query);
@@ -29,9 +49,13 @@ $addresses = $result->fetch_all(MYSQLI_ASSOC);
 
 // Calculate the total price of the cart
 $total_price = 0;
-foreach ($_SESSION['cart'] as $item) {
+$selected_items = json_decode($_POST['selected_items'] ?? '[]', true);
+foreach ($_SESSION['cart'] as $menu_id => $item) {
+    if (!empty($selected_items) && !in_array($menu_id, $selected_items)) continue;
     $total_price += $item['price'] * $item['quantity'];
 }
+
+
 require __DIR__ . '/vendor/autoload.php'; // Include Composer's autoload
 
 // Load environment variables from .env file
@@ -363,7 +387,11 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Transaction completed',
+                        text: 'Transaction completed by ' + details.payer.name.given_name
+                    });
                     Swal.fire({
                         title: 'Transaction Details',
                         text: JSON.stringify(details, null, 2),
@@ -414,7 +442,11 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
         <h2>Your Cart</h2>
 
         <?php if (!empty($_SESSION['cart'])): ?>
-            <?php foreach ($_SESSION['cart'] as $menu_id => $item): ?>
+            <?php 
+            $selected_items = json_decode($_POST['selected_items'] ?? '[]', true);
+            foreach ($_SESSION['cart'] as $menu_id => $item): 
+                if (!empty($selected_items) && !in_array($menu_id, $selected_items)) continue;
+            ?>
                 <div class="cart-item">
                     <img src="images/<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
                     <div class="cart-item-details">
@@ -440,6 +472,7 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
                     <input type="hidden" name="cart[<?php echo $menu_id; ?>][notes]" id="notes-hidden-<?php echo $menu_id; ?>" value="<?php echo isset($item['notes']) ? htmlspecialchars($item['notes']) : ''; ?>">
                 <?php endforeach; ?>
                 <input type="hidden" name="total_amount" value="<?php echo $total_price; ?>">
+                <input type="hidden" name="selected_items" value="<?php echo htmlspecialchars(json_encode($selected_items)); ?>">
 
             <!-- Dine-in, Takeout, Delivery Option -->
             <div class="dine-option">
@@ -480,6 +513,39 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
 
                 <div id="new-address-form" class="new-address-form" style="display:none;">
                     <input type="text" name="new_address" id="new_address" placeholder="Enter your new delivery address">
+                    <button type="button" class="checkout-btn" style="margin-top: 10px;" onclick="saveNewAddress()">Add</button>
+                    <script>
+                    function saveNewAddress() {
+                        const newAddress = document.getElementById('new_address').value;
+                        if (!newAddress) {
+                            Swal.fire('Please enter a valid address');
+                            return;
+                        }
+                        
+                        fetch('save_address.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                address: newAddress
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Address saved successfully!');
+                                window.location.reload();
+                            } else {
+                                Swal.fire('Error saving address: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire('Error', 'An error occurred while saving the address', 'error');
+                        });
+                    }
+                    </script>
                 </div>
             </div>
 
@@ -570,7 +636,7 @@ $paypal_client_id = $_ENV['PAYPAL_CLIENT_ID'];
             },
             onApprove: function(data, actions) {
                 return actions.order.capture().then(function(details) {
-                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    Swal.fire('Success', 'Transaction completed by ' + details.payer.name.given_name, 'success');
                     Swal.fire({
                         title: 'Transaction Details',
                         text: JSON.stringify(details, null, 2),

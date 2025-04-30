@@ -32,7 +32,7 @@ $stmt->bind_param("ssdissi", $name, $description, $price, $quantity, $image, $ca
         header('Location: menu.php?success=1'); 
         exit();
     } else {
-echo "<script>alert('Error: " . mysqli_error($conn) . "');</script>";
+echo "<script>Swal.fire({icon: 'error', title: 'Error', text: '" . mysqli_error($conn) . "'});</script>";
 
     }
 }

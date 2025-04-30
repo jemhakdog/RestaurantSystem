@@ -16,8 +16,24 @@ include('db.php');
 if (isset($_POST['update_quantity'])) {
     $menu_id = $_POST['menu_id'];
     $quantity = $_POST['quantity'];
-
-    if ($quantity > 0) {
+    
+    // Get available stock for this item
+    $stock_sql = "SELECT quantity FROM menu WHERE menu_id = ?";
+    $stock_stmt = $conn->prepare($stock_sql);
+    $stock_stmt->bind_param('i', $menu_id);
+    $stock_stmt->execute();
+    $stock_result = $stock_stmt->get_result();
+    $stock = $stock_result->fetch_assoc()['quantity'];
+    
+    if ($quantity > $stock) {
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Quantity cannot exceed available stock (" . $stock . ")'
+            });
+        </script>";
+    } elseif ($quantity > 0) {
         $update_sql = "UPDATE cart_items SET quantity = ? WHERE user_id = ? AND menu_id = ?";
         $update_stmt = $conn->prepare($update_sql);
         $update_stmt->bind_param('iii', $quantity, $user_id, $menu_id);
@@ -86,7 +102,7 @@ if (isset($_POST['remove_item'])) {
 }
 
 // Fetch cart items from database with menu details
-$cart_sql = "SELECT ci.*, m.name, m.price, m.image 
+$cart_sql = "SELECT ci.*, m.name, m.price, m.image, m.quantity as stock 
              FROM cart_items ci 
              JOIN menu m ON ci.menu_id = m.menu_id 
              WHERE ci.user_id = ?";
@@ -106,6 +122,15 @@ $cart_result = $cart_stmt->get_result();
 $total_price = 0;
 $cart_items = [];
 while ($item = $cart_result->fetch_assoc()) {
+    // If current quantity exceeds stock, adjust it to max available
+    if ($item['quantity'] > $item['stock']) {
+        $adjust_sql = "UPDATE cart_items SET quantity = ? WHERE user_id = ? AND menu_id = ?";
+        $adjust_stmt = $conn->prepare($adjust_sql);
+        $adjust_stmt->bind_param('iii', $item['stock'], $user_id, $item['menu_id']);
+        $adjust_stmt->execute();
+        $item['quantity'] = $item['stock'];
+    }
+    
     $cart_items[$item['menu_id']] = $item;
     $total_price += $item['price'] * $item['quantity'];
 }
@@ -220,6 +245,20 @@ $_SESSION['cart'] = $cart_items;
             justify-content: space-between;
             padding: 15px;
             border-bottom: 1px solid #ddd;
+            align-items: center;
+        }
+        
+        .item-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+            accent-color: #2ecc71;
+            transform: scale(1.5);
+        }
+        
+        .item-checkbox:hover {
+            cursor: pointer;
+            opacity: 0.8;
         }
 
         .cart-item img {
@@ -355,23 +394,21 @@ $_SESSION['cart'] = $cart_items;
 
         <?php if (!empty($cart_items)): ?>
             <form id="checkout-form" action="checkout.php" method="POST">
-                <?php foreach ($cart_items as $item): ?>
+                <?php foreach ($cart_items as $menu_id => $item): ?>
                     <div class="cart-item">
-                        <input type="checkbox" class="item-checkbox" 
-                               name="selected_items[]" 
-                               value="<?php echo $item['menu_id']; ?>" 
-                               data-price="<?php echo ($item['price'] * $item['quantity']); ?>">
+                    <input type="checkbox" class="item-checkbox"  name="selected[]" value="<?php echo $menu_id; ?>" data-price="<?php echo ($item['price'] * $item['quantity']); ?>" <?php echo ($item['stock'] == 0 || $item['quantity'] > $item['stock']) ? 'disabled' : ''; ?>>
+
                         <img src="images/<?php echo htmlspecialchars($item['image']); ?>" 
                              alt="<?php echo htmlspecialchars($item['name']); ?>">
                         <div class="cart-item-details">
                             <h3><?php echo htmlspecialchars($item['name']); ?></h3>
                             <p class="price">PHP <?php echo number_format($item['price'], 2); ?></p>
-                            <p>Quantity: <?php echo $item['quantity']; ?></p>
+                            <p>Quantity: <?php echo $item['quantity']; ?> (Available: <?php echo $item['stock']; ?>)</p>
                             <p>Subtotal: PHP <?php echo number_format($item['price'] * $item['quantity'], 2); ?></p>
                         </div>
                         <div class="cart-item-actions">
                             <input type="hidden" name="menu_id" value="<?php echo $item['menu_id']; ?>">
-                            <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="1" required>
+                            <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" min="<?php echo ($item['stock'] == 0 || $item['quantity'] > $item['stock']) ? '0' : '1'; ?>" max="<?php echo $item['stock']; ?>" <?php echo ($item['stock'] == 0 || $item['quantity'] > $item['stock']) ? 'disabled' : ''; ?> required>
                             <button type="button" onclick="updateQuantity(<?php echo $item['menu_id']; ?>, this)" class="update-btn">Update</button>
                             <button type="button" onclick="removeItem(<?php echo $item['menu_id']; ?>, this)" class="remove-btn">Remove</button>
                         </div>
@@ -383,7 +420,21 @@ $_SESSION['cart'] = $cart_items;
                 </div>
 
                 <input type="hidden" name="selected_items" id="selected-items-input">
-                <button type="submit" class="checkout-btn" disabled id="checkout-button">Proceed to Checkout</button>
+                <button type="submit" class="checkout-btn" id="checkout-button">Proceed to Checkout</button>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const form = document.getElementById('checkout-form');
+                        const selectedItemsInput = document.getElementById('selected-items-input');
+                        
+                        form.addEventListener('submit', function(e) {
+                            const selectedItems = [];
+                            document.querySelectorAll('input[name="selected[]"]:checked').forEach(checkbox => {
+                                selectedItems.push(checkbox.value);
+                            });
+                            selectedItemsInput.value = JSON.stringify(selectedItems);
+                        });
+                    });
+                </script>
             </form>
         <?php else: ?>
             <p>Your cart is empty.</p>
@@ -398,14 +449,21 @@ $_SESSION['cart'] = $cart_items;
             const checkoutForm = document.getElementById('checkout-form');
             const selectedItemsInput = document.getElementById('selected-items-input');
 
-            function updateTotal() {
+            function updateTotal(event) {
                 let total = 0;
                 let selectedItems = [];
 
                 checkboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
+                    if (checkbox.checked && !checkbox.disabled) {
                         total += parseFloat(checkbox.dataset.price);
                         selectedItems.push(checkbox.value);
+                    } else if (checkbox.disabled && event && event.type === 'click') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Item Unavailable',
+                            text: 'The item "' + checkbox.closest('.cart-item').querySelector('h3').textContent + '" is out of stock or quantity exceeds available stock.'
+                        });
+                        checkbox.checked = false;
                     }
                 });
 

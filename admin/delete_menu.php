@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     } else {
         error_log('MySQL Error: '.mysqli_error($conn));
-        echo "<script>alert('Error: An error occurred while deleting the menu item.');</script>";
+        echo "<script>Swal.fire({icon: 'error', title: 'Error', text: 'An error occurred while deleting the menu item.'});</script>";
     }
 }
 
